@@ -35,6 +35,7 @@ public class TESTYController {
         TESTYResponse response = new TESTYResponse(Integer.parseInt(nr_albumu), test, pytaniaController.getAllAnswers(test.getId()));
         this.testyRepository.saveAttemp(test.getId(), Integer.parseInt(nr_albumu));
         response.setId(this.testyRepository.getLastId(Integer.parseInt(nr_albumu), PageRequest.of(0, 1)).get(0).getId());
+        response.setKoniecCzasu(test.getCzas());
         return response;
 
       }

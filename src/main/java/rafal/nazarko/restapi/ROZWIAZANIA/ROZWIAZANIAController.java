@@ -11,10 +11,18 @@ public class ROZWIAZANIAController {
     @Autowired
     private ROZWIAZANIARepository rozwiazaniaRepository;
 
-    @PostMapping("/start")
+    @PostMapping("/ROZWIAZANIE")
     @ResponseBody
-	  public ROZWIAZANIAPostResponse Start(@RequestBody ROZWIAZANIAPostRequest inputPayload) {
-      ROZWIAZANIAPostResponse response = new ROZWIAZANIAPostResponse();
-      return response;
+	  public Object Start(@RequestBody ROZWIAZANIAPostRequest inputPayload) {
+        for (int i=0; i<inputPayload.getRozwiazanie().size(); i++) 
+        { 
+            for (int j=0; j<inputPayload.getRozwiazanie().get(i).getZaznaczone().size(); j++) {
+                System.out.print(inputPayload.getRozwiazanie().get(i).getPytanieId());
+                System.out.print("-");
+                System.out.print(inputPayload.getRozwiazanie().get(i).getZaznaczone().get(j).getOdpowiedzId());
+                System.out.println("");
+            }   
+        }
+      return "ADS";
 	  }
 }

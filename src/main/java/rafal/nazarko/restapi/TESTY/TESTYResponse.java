@@ -1,15 +1,19 @@
 package rafal.nazarko.restapi.TESTY;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import rafal.nazarko.restapi.PYTANIA.PYTANIA;
 
 public class TESTYResponse {
 
-    Integer rozwiazanie_id;
-    Integer nr_albumu;
-	TESTY test;
-	Iterable<PYTANIA> lista_pytan;
+    private Integer rozwiazanie_id;
+    private Integer nr_albumu;
+    private String koniec_czasu;
+	private TESTY test;
+	private Iterable<PYTANIA> lista_pytan;
 
     public TESTYResponse() {
         this.rozwiazanie_id = 1;
@@ -37,8 +41,18 @@ public class TESTYResponse {
     public Iterable<PYTANIA> getListaPytan() {
         return this.lista_pytan;
     }
+    public String getKoniecCzasu() {
+        return this.koniec_czasu;
+    }
 
     public void setId(Integer rozwiazanie_id) {
         this.rozwiazanie_id = rozwiazanie_id;
+    }
+
+    public void setKoniecCzasu(Integer czas) {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.MINUTE, czas);
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");  
+        this.koniec_czasu = dateFormat.format(cal.getTime());
     }
 }
