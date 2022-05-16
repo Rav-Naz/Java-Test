@@ -13,15 +13,15 @@ public class ROZWIAZANIA {
         private final Integer id_testu;
         private final Integer nr_albumu;
         private final String data_rozpoczecia;
-        private final String data_zakonczenia;
+        private final String data_rozwiazania;
         private final Integer ocena;
 
-        public ROZWIAZANIA(Integer id, Integer id_testu, Integer nr_albumu, String data_rozpoczecia,String data_zakonczenia, Integer ocena) {
+        public ROZWIAZANIA(Integer id, Integer id_testu, Integer nr_albumu, String data_rozpoczecia,String data_rozwiazania, Integer ocena) {
             this.id = id;
             this.id_testu = id_testu;
             this.nr_albumu = nr_albumu;
             this.data_rozpoczecia = data_rozpoczecia;
-            this.data_zakonczenia = data_zakonczenia;
+            this.data_rozwiazania = data_rozwiazania;
             this.ocena = ocena;
         }
 
@@ -30,7 +30,7 @@ public class ROZWIAZANIA {
             this.id_testu = 0;
             this.nr_albumu = 0;
             this.data_rozpoczecia = "data_rozpoczecia";
-            this.data_zakonczenia = "data_zakonczenia";
+            this.data_rozwiazania = "data_rozwiazania";
             this.ocena = 0;
         }
 
@@ -46,8 +46,8 @@ public class ROZWIAZANIA {
         public String getDataRozpoczecia() {
             return this.data_rozpoczecia;
         }
-        public String getDataZakonczenia() {
-            return this.data_zakonczenia;
+        public String getDataRozwiazania() {
+            return this.data_rozwiazania;
         }
         public Integer getOcena() {
             return this.ocena;

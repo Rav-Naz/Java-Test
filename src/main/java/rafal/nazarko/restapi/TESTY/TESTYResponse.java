@@ -2,25 +2,17 @@ package rafal.nazarko.restapi.TESTY;
 
 import java.util.ArrayList;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import rafal.nazarko.restapi.PYTANIA.PYTANIA;
 
 public class TESTYResponse {
 
-    @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
-    Integer id;
+    Integer rozwiazanie_id;
     Integer nr_albumu;
 	TESTY test;
 	Iterable<PYTANIA> lista_pytan;
 
     public TESTYResponse() {
-        this.id = 1;
+        this.rozwiazanie_id = 1;
         this.test = new TESTY();
         this.nr_albumu = 1;
         this.lista_pytan = new ArrayList<>();
@@ -30,9 +22,12 @@ public class TESTYResponse {
         this.nr_albumu = nr_albumu;
         this.test = test;
         this.lista_pytan = lista_pytan;
-        this.id = 1;
+        this.rozwiazanie_id = 1;
     }
 
+    public Integer getRozwiazanieId() {
+        return this.rozwiazanie_id;
+    }
     public Integer getNrAlbumu() {
         return this.nr_albumu;
     }
@@ -43,7 +38,7 @@ public class TESTYResponse {
         return this.lista_pytan;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public void setId(Integer rozwiazanie_id) {
+        this.rozwiazanie_id = rozwiazanie_id;
     }
 }

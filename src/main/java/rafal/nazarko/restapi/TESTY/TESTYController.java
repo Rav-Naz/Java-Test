@@ -4,11 +4,13 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import rafal.nazarko.restapi.PYTANIA.PYTANIAController;
+import rafal.nazarko.restapi.ROZWIAZANIA.ROZWIAZANIA;
 
 import org.springframework.stereotype.Controller;
 
@@ -32,6 +34,7 @@ public class TESTYController {
         if (!data_rozpoczecia.isBefore(teraz) || !data_zakonczenia.isAfter(teraz)) return "Czas na wykonanie testu upłynął";
         TESTYResponse response = new TESTYResponse(Integer.parseInt(nr_albumu), test, pytaniaController.getAllAnswers(test.getId()));
         this.testyRepository.saveAttemp(test.getId(), Integer.parseInt(nr_albumu));
+        response.setId(this.testyRepository.getLastId(Integer.parseInt(nr_albumu), PageRequest.of(0, 1)).get(0).getId());
         return response;
 
       }
