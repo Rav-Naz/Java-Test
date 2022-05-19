@@ -5,6 +5,7 @@ import java.util.List;
 public class ROZWIAZANIAPostRequest {
     private Integer nr_albumu;
     private Integer rozwiazanieId;
+    private Integer testId;
     private List<PytaniaInteface> rozwiazanie;
 
     public Integer getNrAlbumu() {
@@ -12,6 +13,9 @@ public class ROZWIAZANIAPostRequest {
     }
     public Integer getRozwiazanieId() {
         return this.rozwiazanieId;
+    }
+    public Integer getTestId() {
+        return this.testId;
     }
     public List<PytaniaInteface> getRozwiazanie() {
         return this.rozwiazanie;
@@ -22,6 +26,9 @@ public class ROZWIAZANIAPostRequest {
     }
     public void setRozwiazanieId(Integer rozwiazanieId) {
         this.rozwiazanieId = rozwiazanieId;
+    }
+    public void setTestId(Integer testId) {
+        this.testId = testId;
     }
     public void setRozwiazanie(List<PytaniaInteface> rozwiazanie) {
         this.rozwiazanie = rozwiazanie;
