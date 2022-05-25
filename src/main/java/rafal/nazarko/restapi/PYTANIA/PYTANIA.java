@@ -15,7 +15,7 @@ import rafal.nazarko.restapi.ODPOWIEDZI.ODPOWIEDZI;
 @Entity
 public class PYTANIA {
         @Id
-        @GeneratedValue(strategy=GenerationType.AUTO)
+        @GeneratedValue(strategy=GenerationType.IDENTITY)
         private final Integer id;
         private final Integer id_testu;
         private final String tresc;

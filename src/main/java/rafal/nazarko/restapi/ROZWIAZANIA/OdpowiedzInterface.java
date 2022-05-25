@@ -1,7 +1,7 @@
 package rafal.nazarko.restapi.ROZWIAZANIA;
 
 public class OdpowiedzInterface {
-    private Integer odpowiedz_id;;
+    private Integer odpowiedz_id;
     private Integer czy_zaznaczone;
 
     public Integer getOdpowiedzId() {

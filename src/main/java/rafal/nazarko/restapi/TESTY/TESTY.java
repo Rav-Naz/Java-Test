@@ -8,7 +8,7 @@ import javax.persistence.Id;
 @Entity
 public class TESTY {
         @Id
-        @GeneratedValue(strategy=GenerationType.AUTO)
+        @GeneratedValue(strategy=GenerationType.IDENTITY)
         private final Integer id;
         private final String nazwa;
         private final String kod_dolaczenia;

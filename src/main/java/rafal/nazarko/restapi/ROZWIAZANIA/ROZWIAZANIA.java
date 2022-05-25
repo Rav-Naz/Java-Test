@@ -8,7 +8,7 @@ import javax.persistence.Id;
 @Entity
 public class ROZWIAZANIA {
         @Id
-        @GeneratedValue(strategy=GenerationType.AUTO)
+        @GeneratedValue(strategy=GenerationType.IDENTITY)
         private final Integer id;
         private final Integer id_testu;
         private final Integer nr_albumu;

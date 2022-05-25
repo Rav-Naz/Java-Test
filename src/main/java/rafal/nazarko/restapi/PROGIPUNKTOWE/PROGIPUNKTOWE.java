@@ -8,7 +8,7 @@ import javax.persistence.Id;
 @Entity
 public class PROGIPUNKTOWE {
         @Id
-        @GeneratedValue(strategy=GenerationType.AUTO)
+        @GeneratedValue(strategy=GenerationType.IDENTITY)
         private final Integer id;
         private final Integer ocena;
         private final double prog_procentowy_dolny;

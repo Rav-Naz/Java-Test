@@ -2,6 +2,7 @@ package rafal.nazarko.restapi.ROZWIAZANIA;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -41,6 +42,9 @@ public class ROZWIAZANIAController {
         float maxPunktowZaTest = 0;
         float zdobytePunkty = 0;
         List<PYTANIA> listaPytanZBazy =  (List<PYTANIA>) pytaniaController.getAllAnswers(inputPayload.getTestId());
+        ROZWIAZANIAPostResponse response = new ROZWIAZANIAPostResponse();
+        List<PytaniaIntefaceResponse> pytaniaResponseList = new ArrayList<PytaniaIntefaceResponse>();
+
         for (int i=0; i<inputPayload.getRozwiazanie().size(); i++) 
         {   
             PytaniaInteface pytanieZRequesta = inputPayload.getRozwiazanie().get(i);
@@ -51,27 +55,58 @@ public class ROZWIAZANIAController {
             maxPunktowZaTest += toKonkretnePytanie.getPunkty();
             if (pytanieZRequesta.getZaznaczone().size() != toKonkretnePytanie.getOdpowiedzi().size()) return "Brak odpowiedzi na wszystkie odpowiedzi w pytaniu";
             boolean czyPoprawneOdpowiedzi = true;
+            PytaniaIntefaceResponse pytanieResponse = new PytaniaIntefaceResponse();
+            pytanieResponse.setPytanieId(toKonkretnePytanie.getId());
+            pytanieResponse.setTresc(toKonkretnePytanie.getTresc());
+            List<OdpowiedzInterfaceResponse> odpowiedziResponseList = new ArrayList<OdpowiedzInterfaceResponse>();
             for (int j=0; j<pytanieZRequesta.getZaznaczone().size(); j++) {
                 OdpowiedzInterface odpowiedzNaPytanieZRequesta = pytanieZRequesta.getZaznaczone().get(j);
                 Predicate<ODPOWIEDZI> byId2 = odpowiedz -> odpowiedz.getId().equals(odpowiedzNaPytanieZRequesta.getOdpowiedzId());
                 List<ODPOWIEDZI> temp2 = toKonkretnePytanie.getOdpowiedzi().stream().filter(byId2).limit(1).collect(Collectors.toList());
-                if (temp2.size() != 1) return "Nie znaleziono odpowiedzi";
+                if (temp2.size() != 1) {
+                    this.rozwiazaniaRepository.flushThisRozwiazanie(inputPayload.getRozwiazanieId());
+                    return "Nie znaleziono odpowiedzi";
+                }
                 ODPOWIEDZI taKonkretnaOdpowiedz = temp2.get(0);
                 if (!taKonkretnaOdpowiedz.getCzyPoprawna().equals(odpowiedzNaPytanieZRequesta.getCzyZaznaczone())) {
                     czyPoprawneOdpowiedzi = false;
                 }
-                this.odpowiedzRozwiazanieRepository.saveNowaOdpowiedz(inputPayload.getTestId(), odpowiedzNaPytanieZRequesta.getOdpowiedzId(), odpowiedzNaPytanieZRequesta.getCzyZaznaczone());
+
+                try {
+                    this.odpowiedzRozwiazanieRepository.saveNowaOdpowiedz(inputPayload.getRozwiazanieId(), odpowiedzNaPytanieZRequesta.getOdpowiedzId(), odpowiedzNaPytanieZRequesta.getCzyZaznaczone());
+                }
+                catch(Exception ex)
+                {
+                    if(ex.getMessage().contains("ConstraintViolationException")) {
+                        return "Na pytanie można udzielić odpowiedzi tylko raz";
+                    } else return "Nieznany błąd";
+                }
+                OdpowiedzInterfaceResponse odpowiedzResponse = new OdpowiedzInterfaceResponse(taKonkretnaOdpowiedz.getId(),odpowiedzNaPytanieZRequesta.getCzyZaznaczone(),taKonkretnaOdpowiedz.getCzyPoprawna(),taKonkretnaOdpowiedz.getOdpowiedz());
+                odpowiedziResponseList.add(odpowiedzResponse);
             }
+            pytanieResponse.setgetUzyskanePunkty(czyPoprawneOdpowiedzi ? toKonkretnePytanie.getPunkty() : 0);
+            pytanieResponse.setZaznaczone(odpowiedziResponseList);
+            pytaniaResponseList.add(pytanieResponse);
             if(czyPoprawneOdpowiedzi) zdobytePunkty += toKonkretnePytanie.getPunkty();
         }
         BigDecimal bd = new BigDecimal(zdobytePunkty/maxPunktowZaTest*100).setScale(2, RoundingMode.HALF_UP);
         PROGIPUNKTOWE ocena = this.progiPunktoweRepository.findDegree(bd.doubleValue());
+        response.setPunkty(zdobytePunkty);
+        response.setPunktyMax(maxPunktowZaTest);
+        response.setNrAlbumu(inputPayload.getNrAlbumu());
+        response.setTestId(inputPayload.getTestId());
+        response.setRozwiazanieId(inputPayload.getRozwiazanieId());
+        response.setOcena(ocena.getOcena());
+        response.setRozwiazanie(pytaniaResponseList);
         try {
-            // TODO fix java.sql.SQLIntegrityConstraintViolationException: Duplicate entry '2-1' for key 'unique'
             this.rozwiazaniaRepository.saveDegree(ocena.getOcena(), inputPayload.getRozwiazanieId());
-        } catch (Exception e) {
-            return "Na pytanie można udzielić odpowiedzi tylko raz";
         }
-        return "ASD";
+        catch(Exception ex) {
+            if(ex.getMessage().contains("ConstraintViolationException")) {
+                return "Na pytanie można udzielić odpowiedzi tylko raz";
+            } else return "Nieznany błąd";
+        }
+
+        return response;
 	  }
 }

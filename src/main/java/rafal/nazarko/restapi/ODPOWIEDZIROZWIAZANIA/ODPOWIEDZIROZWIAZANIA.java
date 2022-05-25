@@ -8,7 +8,7 @@ import javax.persistence.Id;
 @Entity
 public class ODPOWIEDZIROZWIAZANIA {
         @Id
-        @GeneratedValue(strategy=GenerationType.AUTO)
+        @GeneratedValue(strategy=GenerationType.IDENTITY)
         private final Integer id;
         private final Integer id_rozwiazania;
         private final Integer id_odpowiedzi;
