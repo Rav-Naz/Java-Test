@@ -19,5 +19,7 @@
     </style>
     <style name="Theme.JavaTestMobile.AppBarOverlay"
         parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
-    <style name="Theme.JavaTestMobile.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <style name="Theme.JavaTestMobile.PopupOverlay" parent="ThemeOverlay.AppCompat.Light">
+        <item name="android:textSize">5sp</item>
+    </style>
 </resources>
