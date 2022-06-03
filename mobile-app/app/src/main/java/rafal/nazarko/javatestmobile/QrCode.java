@@ -24,11 +24,15 @@ import com.google.zxing.integration.android.IntentResult;
 
 public class QrCode extends AppCompatActivity {
 
-
+    String nrIndeksu;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_qr_code);
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            nrIndeksu = extras.getString("indeks");
+        }
 
             IntentIntegrator integrator = new IntentIntegrator(QrCode.this);
             integrator.setDesiredBarcodeFormats(IntentIntegrator.ALL_CODE_TYPES);
@@ -50,6 +54,9 @@ public class QrCode extends AppCompatActivity {
         if(result != null) {
             if(result.getContents() != null) {
                 Intent intent = new Intent(this, Test.class);
+                intent.putExtra("indeks", nrIndeksu);
+                intent.putExtra("kod", result.getContents());
+
                 startActivity(intent);
             } else {
                 finish();

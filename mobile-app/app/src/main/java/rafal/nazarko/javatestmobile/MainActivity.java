@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void scan(View view) {
         Intent intent = new Intent(this, QrCode.class);
+        intent.putExtra("indeks", numerIndeksu);
         startActivity(intent);
     }
 }

@@ -2,6 +2,8 @@ package rafal.nazarko.javatestmobile;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 
 import com.google.android.material.appbar.AppBarLayout;
@@ -13,9 +15,11 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.widget.NestedScrollView;
 
 import android.os.CountDownTimer;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -32,9 +36,13 @@ public class Test extends AppCompatActivity {
 private ActivityTestBinding binding;
 
     String timeLeft = "??:??";
+    String nrIndeksu;
+    String kodDostepu;
     int timeToEnd = 60;
     CollapsingToolbarLayout toolBarLayout;
     boolean isTitleCollapsed = false;
+    String jsonString = "{\"rozwiazanieId\":29,\"nrAlbumu\":163982,\"koniecCzasu\":\"2022-06-03 21:52:21\",\"testy\":{\"id\":2,\"nazwa\":\"Test z JAVA Spring\",\"czas\":60,\"dataRozpoczecia\":\"2022-05-15 11:00:00\",\"dataZakonczenia\":\"2022-06-17 12:00:00\",\"kodDolaczenia\":\"jashdjaslk\"},\"listaPytan\":[{\"id\":2,\"tresc\":\"Czy JAVA Spring jest trudny?\",\"punkty\":2,\"odpowiedzi\":[{\"id\":2,\"odpowiedz\":\"NIE\",\"czyPoprawna\":0,\"idPytania\":2},{\"id\":1,\"odpowiedz\":\"TAK\",\"czyPoprawna\":1,\"idPytania\":2}],\"idTestu\":2},{\"id\":8,\"tresc\":\"Jaką ocenę dostanie Rafał za wykonanie tej aplikacji?\",\"punkty\":4,\"odpowiedzi\":[{\"id\":4,\"odpowiedz\":\"4.0\",\"czyPoprawna\":0,\"idPytania\":8},{\"id\":3,\"odpowiedz\":\"3.0\",\"czyPoprawna\":0,\"idPytania\":8},{\"id\":5,\"odpowiedz\":\"5.0\",\"czyPoprawna\":1,\"idPytania\":8}],\"idTestu\":2}]}";
+    TestResponse dataFromApi;
     @Override
     public void onBackPressed() {
         super.onBackPressed();
@@ -50,6 +58,15 @@ private ActivityTestBinding binding;
 
      binding = ActivityTestBinding.inflate(getLayoutInflater());
      setContentView(binding.getRoot());
+
+     Bundle extras = getIntent().getExtras();
+     if (extras != null) {
+         nrIndeksu = extras.getString("indeks");
+         kodDostepu = extras.getString("kod");
+     }
+
+     dataFromApi = TestResponse.fromJson(jsonString);
+     timeToEnd = dataFromApi.testy.czas;
 
         Toolbar toolbar = binding.toolbar;
         setSupportActionBar(toolbar);
@@ -89,8 +106,7 @@ private ActivityTestBinding binding;
         }.start();
 
         NestedScrollView nestedScrollView = findViewById(R.id.listView1);
-
-        String cars[] = {"Mercedes", "Fiat", "Ferrari", "Aston Martin", "Lamborghini", "Skoda", "Volkswagen", "Audi", "Citroen"};
+        nestedScrollView.setPadding(50,70,50,100);
 
         LinearLayout linearLayout = new LinearLayout(this);
         LinearLayout.LayoutParams linearParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -98,14 +114,47 @@ private ActivityTestBinding binding;
         linearLayout.setLayoutParams(linearParams);
         nestedScrollView.addView(linearLayout);
 
-        for (String car : cars)
+        TextView startInfo = new TextView(this);
+        startInfo.setTextColor(Color.BLACK);
+        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        startInfo.setLayoutParams(p);
+        startInfo.setText("Witaj! Zanim rozpoczeniesz rozwiązywanie testu przeczytaj poniższe informacje: \n\u2460 Jesteś zalogowany jako student o indeksie " + nrIndeksu + "\n\u2461 Na ukończenie testu masz " + timeToEnd + " min \n\u2462 Po zaznaczeniu odpowiedzi, powróć na górę strony aby przesłać odpowiedż za pomocą przycisku z ikoną wiadomości\n\u2463 Można zaznaczyć więcej niż jedną odpowiedź\n\nPowodzenia!\n");
+        startInfo.setPadding(15, 15, 15, 15);
+        startInfo.setTypeface(startInfo.getTypeface(), Typeface.BOLD);
+        linearLayout.addView(startInfo);
+
+        for (Pytanie pytanie : dataFromApi.listaPytan)
         {
+
+            View divider = new View(this);
+            ViewGroup.LayoutParams dividerParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 2);
+            divider.setBackgroundColor(Color.LTGRAY);
+            divider.setPadding(0,0,0,100);
+            divider.setLayoutParams(dividerParams);
+            linearLayout.addView(divider);
+
+
             TextView textView = new TextView(this);
+            textView.setTextColor(Color.BLACK);
             LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             textView.setLayoutParams(textParams);
-            textView.setText(car);
+            textView.setText("\n(" + pytanie.punkty + " pkt) "  + pytanie.tresc);
             textView.setPadding(15, 15, 15, 15);
             linearLayout.addView(textView);
+
+            for (Odpowiedz odpowiedz : pytanie.odpowiedzi)
+            {
+                CheckBox checkbox = new CheckBox(this);
+                checkbox.setText(odpowiedz.odpowiedz);
+                checkbox.setTextColor(Color.DKGRAY);
+                linearLayout.addView(checkbox);
+            }
+
+            TextView a = new TextView(this);
+            a.setText(" ");
+            linearLayout.addView(a);
+            textView.setPadding(0, 0, 0, 0);
+
         }
 
         FloatingActionButton fab = binding.fab;
@@ -116,6 +165,7 @@ private ActivityTestBinding binding;
                         .setAction("Action", null).show();
             }
         });
+
     }
 
     private String getTimerText(long  miliseconds) {
