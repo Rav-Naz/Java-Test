@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
             public void onTextChanged(CharSequence s, int start,
                                       int before, int count) {
                 if(s.length() == 6) {
-                    numerIndeksu = s.toString();
+                    numerIndeksu = s.toString().trim();
                     nextButton.setEnabled(true);
                 } else {
                     nextButton.setEnabled(false);
