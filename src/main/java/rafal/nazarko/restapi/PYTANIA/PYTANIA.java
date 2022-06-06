@@ -19,16 +19,18 @@ public class PYTANIA {
         private final Integer id;
         private final Integer id_testu;
         private final String tresc;
+        private final String picture;
         private final Integer punkty;
 
         @OneToMany(targetEntity=ODPOWIEDZI.class, mappedBy="id_pytania", fetch=FetchType.EAGER)
         private final List<ODPOWIEDZI> odpowiedzi;
 
-        public PYTANIA(Integer id, Integer id_testu, String tresc, Integer punkty, List<ODPOWIEDZI> odpowiedzi) {
+        public PYTANIA(Integer id, Integer id_testu, String tresc, Integer punkty, List<ODPOWIEDZI> odpowiedzi, String picture) {
             this.id = id;
             this.id_testu = id_testu;
             this.tresc = tresc;
             this.punkty = punkty;
+            this.picture = picture;
             this.odpowiedzi = odpowiedzi;
         }
 
@@ -37,6 +39,7 @@ public class PYTANIA {
             this.id_testu = 0;
             this.tresc = "tresc";
             this.punkty = 0;
+            this.picture = "pic";
             this.odpowiedzi = new ArrayList<>();
         }
 
@@ -53,6 +56,10 @@ public class PYTANIA {
 
         public Integer getPunkty() {
             return this.punkty;
+        }
+
+        public String getPicture(){
+            return this.picture;
         }
 
         public List<ODPOWIEDZI> getOdpowiedzi() {

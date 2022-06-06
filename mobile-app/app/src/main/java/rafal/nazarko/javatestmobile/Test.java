@@ -1,9 +1,14 @@
 package rafal.nazarko.javatestmobile;
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 
 import com.android.volley.AuthFailureError;
@@ -22,7 +27,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
+import com.squareup.picasso.Picasso;
 
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.widget.NestedScrollView;
@@ -32,14 +40,21 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,6 +62,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.stream.Collectors;
 
 import rafal.nazarko.javatestmobile.databinding.ActivityTestBinding;
 
@@ -65,14 +81,24 @@ private ActivityTestBinding binding;
     LinearLayout mainLinearLayout;
     FloatingActionButton sendButton;
     RozwiazaniePost odpowiedzi;
+    boolean isSended = false;
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
-        Intent i=new Intent(this, MainActivity.class);
-        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(i);
+
+        if (isSended) {
+            backToHome();
+        }else{
+            new AlertDialog.Builder(this)
+                    .setTitle("Potwiedzenie")
+                    .setMessage("Czy na pewno chcesz opuścić test? Spowoduje to utratę postępów i brak możliwości powrotu do tego rozwiązania.")
+                    .setCancelable(false)
+                    .setPositiveButton("Tak",(dialog, which) -> {backToHome();})
+                    .setNegativeButton("Nie", null)
+                    .show();
+        }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @SuppressLint("RestrictedApi")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,7 +145,6 @@ private ActivityTestBinding binding;
     private void sendGetTestRequest() {
         RequestQueue queue = Volley.newRequestQueue(this);
         String url = "http://192.168.50.80:8080/TESTY/"+kodDostepu+"/"+nrIndeksu;
-        TextView newTextview = new TextView(this);
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                 response -> {
                     String str = "";
@@ -128,9 +153,8 @@ private ActivityTestBinding binding;
                     setupTest();
                 },
                 error -> {
-                    newTextview.setText(error.toString());
+                    Toast.makeText(getApplicationContext(), error.toString(), Toast.LENGTH_LONG).show();
                 });
-        mainLinearLayout.addView(newTextview);
         queue.add(stringRequest);
     }
 
@@ -148,7 +172,7 @@ private ActivityTestBinding binding;
                 if (scrollRange == -1) {
                     scrollRange = appBarLayout.getTotalScrollRange();
                 }
-                if (scrollRange + verticalOffset == 0) {
+                if (scrollRange + verticalOffset == 0 && !isSended) {
                     isTitleCollapsed = true;
                     toolBarLayout.setTitle(timeLeft);
                     isShow = true;
@@ -163,7 +187,7 @@ private ActivityTestBinding binding;
         new CountDownTimer(timeToEnd*60*1000, 1000) {
             public void onTick(long millisUntilFinished) {
                 timeLeft = getTimerText(millisUntilFinished);
-                if(isTitleCollapsed) toolBarLayout.setTitle(timeLeft);
+                if(isTitleCollapsed && !isSended) toolBarLayout.setTitle(timeLeft);
             }
 
             public void onFinish() {
@@ -194,6 +218,11 @@ private ActivityTestBinding binding;
             divider.setLayoutParams(dividerParams);
             mainLinearLayout.addView(divider);
 
+            if(pytanie.picture != null) {
+                ImageView image = new ImageView(this);
+                Picasso.get().load(pytanie.picture).into(image);
+                mainLinearLayout.addView(image);
+            }
 
             TextView textView = new TextView(this);
             textView.setTextColor(Color.BLACK);
@@ -230,9 +259,6 @@ private ActivityTestBinding binding;
             mainLinearLayout.addView(a);
             textView.setPadding(0, 0, 0, 0);
         }
-        TextView b = new TextView(this);
-        b.setText(odpowiedzi.toString());
-        mainLinearLayout.addView(b);
     }
 
     private void onCheckboxChanged(CompoundButton buttonView, boolean isChecked) {
@@ -259,29 +285,23 @@ private ActivityTestBinding binding;
                 }
             }
         }
-
-//        TextView b = new TextView(this);
-//        b.setText(odpowiedzi.toString());
-//        mainLinearLayout.removeViewAt(mainLinearLayout.getChildCount()-1);
-//        mainLinearLayout.addView(b);
         checkIfEveryQuestionHaveAnswer();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     private void sendRozwiazaniePOSTRequest() {
+        isSended = true;
+        sendButton.setEnabled(false);
         RequestQueue queue = Volley.newRequestQueue(this);
         String url = "http://192.168.50.80:8080/ROZWIAZANIE";
-        TextView newTextview = new TextView(this);
         final String requestBody = odpowiedzi.toString();
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url,
                 response -> {
                     String str = new String(response.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
-                    mainLinearLayout.removeAllViewsInLayout();
-                    TextView asd = new TextView(this);
-                    asd.setText(str);
-                    mainLinearLayout.addView(asd);
+                    showResponse(str);
                 },
                 error -> {
-                    newTextview.setText(error.toString());
+                    Toast.makeText(getApplicationContext(), error.toString(), Toast.LENGTH_LONG).show();
                 }) {
             @Override
             public String getBodyContentType() {
@@ -300,16 +320,78 @@ private ActivityTestBinding binding;
 
             @Override
             protected Response<String> parseNetworkResponse(NetworkResponse response) {
-                String responseString = "";
-                if (response != null) {
-                    responseString = String.valueOf(response.statusCode);
-                }
-                return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
+                String statusCode = String.valueOf(response.statusCode);
+                return super.parseNetworkResponse(response);
             }
         };
-
-        mainLinearLayout.addView(newTextview);
         queue.add(stringRequest);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private void showResponse(String jsonStringResponse) {
+        sendButton.setVisibility(View.INVISIBLE);
+        mainLinearLayout.removeAllViewsInLayout();
+        WynikResponse wynik = WynikResponse.fromJson(jsonStringResponse);
+        toolBarLayout.setTitle("Ocena: " + wynik.ocena + ".0");
+        TextView startInfo = new TextView(this);
+        startInfo.setTextColor(Color.BLACK);
+        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        startInfo.setLayoutParams(p);
+        startInfo.setText("Uzyskane punkty: " + wynik.punkty + " pkt\nPunkty możliwe do zdobycia: "+ wynik.punktyMax + " pkt\nWynik procentowy: " + String.format("%.2f",(wynik.punkty/wynik.punktyMax)*100) + "%");
+        startInfo.setPadding(15, 15, 15, 15);
+        startInfo.setTypeface(startInfo.getTypeface(), Typeface.BOLD);
+        mainLinearLayout.addView(startInfo);
+
+        for (PytanieW pytanie : wynik.rozwiazanie)
+        {
+            Pytanie sad = dataFromApi.listaPytan.stream().filter(gsd -> gsd.id == pytanie.pytanieId).collect(Collectors.toList()).get(0);
+
+            View divider = new View(this);
+            ViewGroup.LayoutParams dividerParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 2);
+            divider.setBackgroundColor(Color.LTGRAY);
+            divider.setPadding(0,0,0,100);
+            divider.setLayoutParams(dividerParams);
+            mainLinearLayout.addView(divider);
+
+
+            TextView textView = new TextView(this);
+            textView.setTextColor(Color.BLACK);
+            LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            textView.setLayoutParams(textParams);
+            textView.setText("\n(" + pytanie.uzyskanePunkty + "/" + sad.punkty + " pkt) "  + pytanie.tresc);
+            textView.setPadding(15, 15, 15, 15);
+            mainLinearLayout.addView(textView);
+
+            for (OdpowiedzW odpowiedz : pytanie.odpowiedzi)
+            {
+                CheckBox checkbox = new CheckBox(this);
+                checkbox.setText(odpowiedz.tresc);
+                checkbox.setTextColor(Color.DKGRAY);
+                checkbox.setEnabled(false);
+                if (odpowiedz.czyZaznaczone == 1) {
+                    checkbox.setChecked(true);
+                }
+                if (odpowiedz.czyPoprawne == 1 && odpowiedz.czyZaznaczone == 1) {
+                    checkbox.setBackgroundColor(Color.GREEN);
+                } else if (odpowiedz.czyPoprawne == 0 && odpowiedz.czyZaznaczone == 1) {
+                    checkbox.setBackgroundColor(Color.RED);
+                }
+
+                mainLinearLayout.addView(checkbox);
+            }
+
+            TextView a = new TextView(this);
+            a.setText(" ");
+            mainLinearLayout.addView(a);
+            textView.setPadding(0, 0, 0, 0);
+        }
+
+        Button exit = new Button(this);
+        exit.setBackgroundColor(Color.parseColor("#1F0065"));
+        exit.setTextColor(Color.WHITE);
+        exit.setText("Koniec");
+        exit.setOnClickListener(click -> backToHome());
+        mainLinearLayout.addView(exit);
     }
 
     private void checkIfEveryQuestionHaveAnswer() {
@@ -343,6 +425,12 @@ private ActivityTestBinding binding;
         int minutes = ((rounded % 86400) % 3600) / 60;
 
         return this.formatTime(seconds, minutes);
+    }
+
+    private void backToHome() {
+        Intent i=new Intent(this, MainActivity.class);
+        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(i);
     }
 
     private String formatTime (int seconds, int minutes) {
